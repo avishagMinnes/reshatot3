@@ -1,0 +1,18 @@
+char decision[10]; // Ensure buffer is correctly sized
+
+do {
+    // Existing code to send the file
+    fclose(file);  // Close the file each loop iteration if it's reopened inside the loop
+
+    // Clear decision buffer
+    memset(decision, 0, sizeof(decision));
+
+    // Ask user whether to send the file again
+    printf("Send the file again? (yes/no): ");
+    scanf("%9s", decision);
+} while (strncmp(decision, "yes", 3) == 0);
+
+// Final operations to send exit message and close socket
+strcpy(buffer, "exit");
+rudp_send(sockfd, &dest_addr, buffer, strlen(buffer));
+rudp_close(sockfd);
