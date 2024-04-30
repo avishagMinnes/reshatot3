@@ -1,23 +1,29 @@
 CC=gcc
-CFLAGS=-Wall -g
+FLAGS=-Wall -g
 OBJFILES=RUDP_Sender.o RUDP_Receiver.o RUDP_API.o
-TARGET=runRUDP
+RUDP = RUDP_Receiver RUDP_Sender 
 
-all: $(TARGET)
 
-$(TARGET): $(OBJFILES)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJFILES)
+.PHONY: all clean
 
-RUDP_Sender.o: RUDP_Sender.c RUDP_API.c
-	$(CC) $(CFLAGS) -c RUDP_Sender.c
+all: rudp
 
-RUDP_Receiver.o: RUDP_Receiver.c RUDP_API.c
-	$(CC) $(CFLAGS) -c RUDP_Receiver.c
+rudp: $(RUDP)
 
-RUDP_API.o: RUDP_API.c RUDP_API.c
+RUDP_Receiver: RUDP_Receiver.o RUDP_API.o
+	$(CC) $(FLAGS) $^ -o $@	
+
+RUDP_Receiver.o: RUDP_Receiver.c RUDP_API.h 
+	$(CC) $(FLAGS) -c $<	
+
+RUDP_Sender: RUDP_Sender.o RUDP_API.o
+	$(CC) $(FLAGS) $^ -o $@	
+
+RUDP_Sender.o: RUDP_Sender.c RUDP_API.h
+	$(CC) $(FLAGS) -c $<	
+
+RUDP_API.o: RUDP_API.c RUDP_API.h
 	$(CC) $(CFLAGS) -c RUDP_API.c
 
 clean:
 	rm -f $(OBJFILES) $(TARGET)
-
-.PHONY: all clean
