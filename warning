@@ -1,31 +1,7 @@
-RUDP_API.c:104:12: warning: implicit declaration of function ‘close’; did you mean ‘pclose’? [-Wimplicit-function-declaration]
-  104 |     return close(sockfd);
-      |            ^~~~~
-      |            pclose
-gcc -Wall -g RUDP_Receiver.o RUDP_API.o -o RUDP_Receiver	
-gcc -Wall -g -c RUDP_Sender.c	
-RUDP_Sender.c: In function ‘main’:
-RUDP_Sender.c:53:51: warning: passing argument 3 of ‘rudp_send’ makes integer from pointer without a cast [-Wint-conversion]
-   53 |                 if (rudp_send(sockfd, &dest_addr, buffer, read_bytes) < 0) {
-      |                                                   ^~~~~~
-      |                                                   |
-      |                                                   char *
-In file included from RUDP_Sender.c:1:
-RUDP_API.h:73:51: note: expected ‘size_t’ {aka ‘long unsigned int’} but argument is of type ‘char *’
-   73 | int rudp_send(int sockfd, const void *buf, size_t len, int flags);
-      |                                            ~~~~~~~^~~
-RUDP_Sender.c:68:35: warning: passing argument 3 of ‘rudp_send’ makes integer from pointer without a cast [-Wint-conversion]
-   68 |     rudp_send(sockfd, &dest_addr, buffer, strlen(buffer));
-      |                                   ^~~~~~
-      |                                   |
-      |                                   char *
-In file included from RUDP_Sender.c:1:
-RUDP_API.h:73:51: note: expected ‘size_t’ {aka ‘long unsigned int’} but argument is of type ‘char *’
-   73 | int rudp_send(int sockfd, const void *buf, size_t len, int flags);
-      |                                            ~~~~~~~^~~
-RUDP_Sender.c:69:16: warning: passing argument 1 of ‘rudp_close’ makes pointer from integer without a cast [-Wint-conversion]
-   69 |     rudp_close(sockfd);
-      |                ^~~~~~
-      |                |
-      |                int
+RUDP_Receiver.c:32:27: warning: passing argument 2 of ‘rudp_bind’ from incompatible pointer type [-Wincompatible-pointer-types]
+   32 |     if (rudp_bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+      |                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                           |
+      |                           struct sockaddr *
+In file included from RUDP_Receiver.c:9:
 
