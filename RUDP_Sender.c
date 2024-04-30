@@ -1,4 +1,4 @@
-#include "RUDP_API.c"
+#include "RUDP_API.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,7 +18,6 @@ int main(int argc, char *argv[]) {
     char buffer[1024];
     FILE *file;
 
-    // Create UDP socket
     int sockfd = rudp_socket(AF_INET, SOCK_DGRAM, 0);
     if (sockfd < 0) {
         perror("Failed to create UDP socket");
@@ -36,6 +35,7 @@ int main(int argc, char *argv[]) {
     do {
         printf("Enter the filename to send: ");
         scanf("%1023s", buffer);
+        getchar();  // Consume the newline character to prevent it from being read in the loop
 
         file = fopen(buffer, "rb");
         if (file == NULL) {
@@ -43,11 +43,14 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
-        // Read and send the file
         while (!feof(file)) {
             size_t read_bytes = fread(buffer, 1, sizeof(buffer), file);
+            if (ferror(file)) {
+                perror("Read error");
+                break;
+            }
             if (read_bytes > 0) {
-                if (rudp_send(sockfd, &dest_addr, buffer, read_bytes, 0) < 0) {
+                if (rudp_send(sockfd, buffer, read_bytes, 0) < 0) {
                     perror("Failed to send data");
                 }
             }
@@ -55,17 +58,14 @@ int main(int argc, char *argv[]) {
 
         fclose(file);
 
-        // Ask user whether to send the file again
         printf("Send the file again? (yes/no): ");
-        scanf("%9s", decision);
+        fgets(decision, sizeof(decision), stdin);
+        decision[strcspn(decision, "\n")] = 0;  // Remove trailing newline
 
     } while (strncmp(decision, "yes", 3) == 0);
 
-    // Send an exit message to the receiver
     strcpy(buffer, "exit");
-    rudp_send(sockfd, &dest_addr, buffer, strlen(buffer), 0);
-
-    // Close the UDP socket
+    rudp_send(sockfd, buffer, strlen(buffer), 0);
     rudp_close(sockfd);
 
     return 0;
