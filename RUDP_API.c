@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #define MAX_DATA_SIZE 1024
 
@@ -100,5 +101,9 @@ int rudp_recv(int sockfd, void *buf, size_t len, int flags) {
 }
 
 int rudp_close(int sockfd) {
-    return close(sockfd);
+	if(close(sockfd) == -1) {
+		perror("Failed to close socket");
+		return -1;
+	}
+	return 0;
 }
