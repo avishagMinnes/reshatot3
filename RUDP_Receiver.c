@@ -8,6 +8,25 @@
 #include <sys/time.h>
 #include "RUDP_API.h"
 
+int handle_handshake(int sockfd, struct sockaddr_in *client_addr, socklen_t *client_len) {
+    RUDPPacket packet;
+    if (recvfrom(sockfd, &packet, sizeof(packet), 0, (struct sockaddr *)client_addr, client_len) < 0) {
+        perror("Handshake receive failed");
+        return -1;
+    }
+    // Check if it's a handshake init packet
+    if (packet.type == HANDSHAKE_INIT) {
+        packet.type = HANDSHAKE_ACK; // Prepare ACK packet
+        if (sendto(sockfd, &packet, sizeof(packet), 0, (struct sockaddr *)client_addr, *client_len) < 0) {
+            perror("Handshake ACK failed");
+            return -1;
+        }
+        return 0; // Handshake successful
+    }
+    return -1; // Unexpected packet type
+}
+
+
 int main(int argc, char *argv[]) {
     if (argc != 3) {
         fprintf(stderr, "Usage: %s <port>\n", argv[0]);
@@ -28,6 +47,17 @@ int main(int argc, char *argv[]) {
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY; // Listen on all interfaces
     server_addr.sin_port = htons(port); // Host to network short
+
+     if (bind(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
+        perror("Bind failed");
+        return 1;
+    }
+
+    // Handle handshake
+    if (handle_handshake(sockfd, &client_addr, &client_len) < 0) {
+        fprintf(stderr, "Handshake failed\n");
+        return 1;
+    }
 
     char buffer[1024]; // Buffer to store received data
     struct timeval start, end;
