@@ -9,7 +9,7 @@
 #include "RUDP_API.h"
 
 int handle_handshake(int sockfd, struct sockaddr_in *client_addr, socklen_t *client_len) {
-    RUDPPacket packet;
+    RUDP_Packet packet;
     if (recvfrom(sockfd, &packet, sizeof(packet), 0, (struct sockaddr *)client_addr, client_len) < 0) {
         perror("Handshake receive failed");
         return -1;
@@ -26,8 +26,8 @@ int handle_handshake(int sockfd, struct sockaddr_in *client_addr, socklen_t *cli
     return -1; // Unexpected packet type
 }
 
-
 int main(int argc, char *argv[]) {
+    printf("0\n");
     if (argc != 2) {
         fprintf(stderr, "Usage: %s <port>\n", argv[0]);
         return 1;
@@ -37,6 +37,7 @@ int main(int argc, char *argv[]) {
     struct sockaddr_in server_addr, client_addr;
     socklen_t client_len = sizeof(client_addr);
 
+    printf("2\n");
     // Create UDP socket
     sockfd = rudp_socket(AF_INET, SOCK_DGRAM, 0);
     if (sockfd < 0) {
@@ -49,11 +50,14 @@ int main(int argc, char *argv[]) {
     server_addr.sin_addr.s_addr = INADDR_ANY; // Listen on all interfaces
     server_addr.sin_port = htons(port); // Host to network short
 
+    printf("3\n");
      if (bind(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
         perror("Bind failed");
+        rudp_close(sockfd);
         return 1;
     }
 
+    printf("4\n");
     // Handle handshake
     if (handle_handshake(sockfd, &client_addr, &client_len) < 0) {
         fprintf(stderr, "Handshake failed\n");
@@ -68,6 +72,7 @@ int main(int argc, char *argv[]) {
     int total_received_messages = 0;
 
     while (1) {
+        printf("5\n");
         gettimeofday(&start, NULL);
         ssize_t received = rudp_recv(sockfd, buffer, sizeof(buffer), 0, port);
         gettimeofday(&end, NULL);
@@ -109,5 +114,6 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
 
 
