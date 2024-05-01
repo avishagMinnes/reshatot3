@@ -7,12 +7,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-typedef struct {
-    PacketType type;
-    unsigned int seq_num;
-    char data[1024];
-} RUDPPacket;
-
 int initiate_handshake(int sockfd, struct sockaddr_in *dest_addr) {
     RUDPPacket packet = { .type = HANDSHAKE_INIT, .seq_num = 0 };
     if (sendto(sockfd, &packet, sizeof(packet), 0, (struct sockaddr *)dest_addr, sizeof(struct sockaddr_in)) < 0) {
@@ -58,6 +52,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+	char decision[5];
     do {
         printf("Enter the filename to send: ");
         fgets(buffer, 1024, stdin);
@@ -83,7 +78,7 @@ int main(int argc, char *argv[]) {
         }
 
         fclose(file);
-
+	
         printf("Send the file again? (yes/no): ");
         fgets(decision, sizeof(decision), stdin);
         decision[strcspn(decision, "\n")] = 0;  // Remove trailing newline
