@@ -1,9 +1,9 @@
-RUDP_Receiver.c:57:35: error: ‘client_addr’ undeclared (first use in this function); did you mean ‘inet_addr’?
-   57 |     if (handle_handshake(sockfd, &client_addr, &client_len) < 0) {
-      |                                   ^~~~~~~~~~~
-      |                                   inet_addr
-RUDP_Receiver.c:57:35: note: each undeclared identifier is reported only once for each function it appears in
-RUDP_Receiver.c:57:49: error: ‘client_len’ undeclared (first use in this function)
-   57 |     if (handle_handshake(sockfd, &client_addr, &client_len) < 0) {
-
-
+RUDP_Receiver.c:41:9: error: redeclaration of ‘sockfd’ with no linkage
+   41 |     int sockfd = rudp_socket(AF_INET, SOCK_DGRAM, 0);
+      |         ^~~~~~
+RUDP_Receiver.c:36:9: note: previous declaration of ‘sockfd’ with type ‘int’
+   36 |     int sockfd, port = atoi(argv[1]);
+      |         ^~~~~~
+RUDP_Receiver.c:47:24: error: redeclaration of ‘server_addr’ with no linkage
+   47 |     struct sockaddr_in server_addr;
+      |                        ^~~~~~~~~~~
