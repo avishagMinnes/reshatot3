@@ -1,9 +1,3 @@
-RUDP_Receiver.c:41:9: error: redeclaration of ‘sockfd’ with no linkage
-   41 |     int sockfd = rudp_socket(AF_INET, SOCK_DGRAM, 0);
-      |         ^~~~~~
-RUDP_Receiver.c:36:9: note: previous declaration of ‘sockfd’ with type ‘int’
-   36 |     int sockfd, port = atoi(argv[1]);
-      |         ^~~~~~
-RUDP_Receiver.c:47:24: error: redeclaration of ‘server_addr’ with no linkage
-   47 |     struct sockaddr_in server_addr;
-      |                        ^~~~~~~~~~~
+Enter the filename to send: tmp.txt
+file: tmp.txt
+Segmentation fault (core dumped)
