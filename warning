@@ -1,7 +1,24 @@
-RUDP_Receiver.c:32:27: warning: passing argument 2 of ‘rudp_bind’ from incompatible pointer type [-Wincompatible-pointer-types]
-   32 |     if (rudp_bind(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-      |                           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      |                           |
-      |                           struct sockaddr *
+RUDP_Receiver.c:12:5: error: unknown type name ‘PacketType’
+   12 |     PacketType type;
+      |     ^~~~~~~~~~
+RUDP_Receiver.c: In function ‘handle_handshake’:
+RUDP_Receiver.c:24:24: error: ‘HANDSHAKE_INIT’ undeclared (first use in this function)
+   24 |     if (packet.type == HANDSHAKE_INIT) {
+      |                        ^~~~~~~~~~~~~~
+RUDP_Receiver.c:24:24: note: each undeclared identifier is reported only once for each function it appears in
+RUDP_Receiver.c:25:23: error: ‘HANDSHAKE_ACK’ undeclared (first use in this function)
+   25 |         packet.type = HANDSHAKE_ACK;
+      |                       ^~~~~~~~~~~~~
+RUDP_Receiver.c: In function ‘main’:
+RUDP_Receiver.c:71:73: warning: passing argument 5 of ‘rudp_recv’ makes integer from pointer without a cast [-Wint-conversion]
+   71 | e_t received = rudp_recv(sockfd, buffer, sizeof(buffer), 0, &client_addr);
+      |                                                             ^~~~~~~~~~~~
+      |                                                             |
+      |                                                             struct sockaddr_in *
+
 In file included from RUDP_Receiver.c:9:
+RUDP_API.h:40:65: note: expected ‘int’ but argument is of type ‘struct sockaddr_in *’
+   40 | int rudp_recv(int sockfd, void *buf, size_t len, int flags, int port);
+      |                                                             ~~~~^~~~
+
 
