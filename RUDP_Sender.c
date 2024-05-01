@@ -7,6 +7,29 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+typedef struct {
+    PacketType type;
+    unsigned int seq_num;
+    char data[1024];
+} RUDPPacket;
+
+int initiate_handshake(int sockfd, struct sockaddr_in *dest_addr) {
+    RUDPPacket packet = { .type = HANDSHAKE_INIT, .seq_num = 0 };
+    if (sendto(sockfd, &packet, sizeof(packet), 0, (struct sockaddr *)dest_addr, sizeof(struct sockaddr_in)) < 0) {
+        perror("Handshake send failed");
+        return -1;
+    }
+
+    // Wait for handshake ACK
+    struct sockaddr_in from;
+    socklen_t fromlen = sizeof(from);
+    if (recvfrom(sockfd, &packet, sizeof(packet), 0, (struct sockaddr *)&from, &fromlen) < 0 || packet.type != HANDSHAKE_ACK) {
+        perror("Handshake ACK failed");
+        return -1;
+    }
+    return 0;
+}
+
 int main(int argc, char *argv[]) {
     if (argc != 3) {
         fprintf(stderr, "Usage: %s <IP> <PORT>\n", argv[0]);
@@ -18,7 +41,7 @@ int main(int argc, char *argv[]) {
     char buffer[1024];
     FILE *file;
 
-    int sockfd = rudp_socket(AF_INET, SOCK_DGRAM, 0);
+    int sockfd = rudp_socket();
     if (sockfd < 0) {
         perror("Failed to create UDP socket");
         return 1;
@@ -30,13 +53,16 @@ int main(int argc, char *argv[]) {
     dest_addr.sin_port = htons(port);
     dest_addr.sin_addr.s_addr = inet_addr(ip);
 
-    char decision[10];  // Buffer for user decision
+    if (initiate_handshake(sockfd, &dest_addr) != 0) {
+        fprintf(stderr, "Handshake failed, terminating.\n");
+        return 1;
+    }
 
     do {
         printf("Enter the filename to send: ");
-        scanf("%1023s", buffer);
-        getchar();  // Consume the newline character to prevent it from being read in the loop
-
+        fgets(buffer, 1024, stdin);
+        buffer[strcspn(buffer, "\n")] = '\0';
+        printf("file: %s\n", buffer);
         file = fopen(buffer, "rb");
         if (file == NULL) {
             perror("Failed to open file");
@@ -50,7 +76,7 @@ int main(int argc, char *argv[]) {
                 break;
             }
             if (read_bytes > 0) {
-                if (rudp_send(sockfd, buffer, read_bytes, 0) < 0) {
+                if (rudp_send(sockfd, buffer, read_bytes, 0, ip, port) < 0) {
                     perror("Failed to send data");
                 }
             }
@@ -65,7 +91,7 @@ int main(int argc, char *argv[]) {
     } while (strncmp(decision, "yes", 3) == 0);
 
     strcpy(buffer, "exit");
-    rudp_send(sockfd, buffer, strlen(buffer), 0);
+    rudp_send(sockfd, buffer, strlen(buffer), 0, ip, port);
     rudp_close(sockfd);
 
     return 0;
