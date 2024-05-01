@@ -5,15 +5,9 @@
 #include <arpa/inet.h>
 #include <stdio.h>
 #include <unistd.h>
+#include "RUDP_API.h"
 
-#define MAX_DATA_SIZE 1024
 
-typedef struct {
-    uint16_t length;
-    uint16_t checksum;
-    uint8_t flags;
-    char data[MAX_DATA_SIZE];
-} RUDP_Packet;
 
 unsigned short int calculate_checksum(void *data, unsigned int bytes) {
     unsigned short int *data_pointer = (unsigned short int *)data;
@@ -46,18 +40,18 @@ int rudp_socket() {
     return sockfd;
 }
 
-int rudp_send(int sockfd, const void *buf, size_t len, int flags) {
-    RUDP_Packet packet;
-    memset(&packet, 0, sizeof(packet));
-    packet.length = (uint16_t)len;
-    memcpy(packet.data, buf, len);
-    packet.checksum = calculate_checksum(packet.data, packet.length);
+int rudp_send(int sockfd, const void *buf, short len, int flags, const char *ip, int port) {
+    RUDP_Packet *packet; //do malloc
+    // memset(&packet, 0, sizeof(packet));
+    packet->length = (uint16_t)len;
+    memcpy(packet->data, buf, len);
+    packet->checksum = calculate_checksum(packet->data, packet->length);
 
     struct sockaddr_in dest_addr;
     memset(&dest_addr, 0, sizeof(dest_addr));
     dest_addr.sin_family = AF_INET;
-    dest_addr.sin_port = htons(12345);
-    dest_addr.sin_addr.s_addr = inet_addr("192.168.1.100");
+    dest_addr.sin_port = htons(port);
+    dest_addr.sin_addr.s_addr = inet_addr(ip);
 
     if (sendto(sockfd, &packet, sizeof(packet), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr)) < 0) {
         perror("Failed to send packet");
@@ -67,8 +61,12 @@ int rudp_send(int sockfd, const void *buf, size_t len, int flags) {
     return 0;
 }
 
-int rudp_recv(int sockfd, void *buf, size_t len, int flags) {
+int rudp_recv(int sockfd, void *buf, size_t len, int flags, int port) {
     struct sockaddr_in from_addr;
+    memset(&from_addr, 0, sizeof(from_addr));
+    // from_addr.sin_family = AF_INET;
+    // from_addr.sin_port = htons(port);
+    // from_addr.sin_addr.s_addr = htons(INADDR_ANY);
     socklen_t from_len = sizeof(from_addr);
     RUDP_Packet packet;
 
@@ -84,7 +82,7 @@ int rudp_recv(int sockfd, void *buf, size_t len, int flags) {
 
     // Calculate checksum for the received packet
     unsigned short original_checksum = packet.checksum;  // Store original checksum
-    packet.checksum = 0;  // Zero out checksum for calculation
+    // packet.checksum = 0;  // Zero out checksum for calculation
     unsigned short calculated_checksum = calculate_checksum(&packet, sizeof(packet));
 
     // Check checksum validity
