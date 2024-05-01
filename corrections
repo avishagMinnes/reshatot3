@@ -1,10 +1,4 @@
-typedef enum {
-    HANDSHAKE_INIT, HANDSHAKE_ACK, DATA, TERMINATE
-} PacketType;
-
-typedef struct {
-    PacketType type;
-    unsigned int seq_num;
-    char data[1024];
-} RUDPPacket;
+RUDP_Sender.c:82:15: error: ‘decision’ undeclared (first use in this function)
+   82 |         fgets(decision, sizeof(decision), stdin);
+      |               ^~~~~~~~
 
