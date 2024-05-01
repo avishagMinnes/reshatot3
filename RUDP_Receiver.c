@@ -28,12 +28,14 @@ int handle_handshake(int sockfd, struct sockaddr_in *client_addr, socklen_t *cli
 
 
 int main(int argc, char *argv[]) {
-    if (argc != 3) {
+    if (argc != 2) {
         fprintf(stderr, "Usage: %s <port>\n", argv[0]);
         return 1;
     }
 
-    int port = atoi(argv[1]); // Convert port number from string to integer
+    int sockfd, port = atoi(argv[1]);
+    struct sockaddr_in server_addr, client_addr;
+    socklen_t client_len = sizeof(client_addr);
 
     // Create UDP socket
     int sockfd = rudp_socket(AF_INET, SOCK_DGRAM, 0);
