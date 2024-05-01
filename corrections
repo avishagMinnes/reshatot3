@@ -1,4 +1,35 @@
-RUDP_Sender.c:82:15: error: ‘decision’ undeclared (first use in this function)
-   82 |         fgets(decision, sizeof(decision), stdin);
-      |               ^~~~~~~~
+int rudp_recv(int sockfd, void *buf, size_t len, int flags, int port) {
+    struct sockaddr_in from_addr;
+    memset(&from_addr, 0, sizeof(from_addr));
+    socklen_t from_len = sizeof(from_addr);
+    RUDP_Packet packet;
+
+    // Initialize buffer to zero
+    memset(&packet, 0, sizeof(packet));
+
+    // Receive a packet
+    ssize_t received = recvfrom(sockfd, &packet, sizeof(packet), flags, (struct sockaddr *)&from_addr, &from_len);
+    if (received < 0) {
+        perror("Failed to receive data");
+        return -1;
+    }
+
+    // Store original checksum and zero it out for calculation
+    unsigned short original_checksum = packet.checksum;  // Store original checksum
+    packet.checksum = 0;  // Zero out checksum for calculation
+
+    unsigned short calculated_checksum = calculate_checksum(&packet, sizeof(packet));
+
+    // Check checksum validity
+    if (original_checksum != calculated_checksum) {
+        fprintf(stderr, "Checksum mismatch: expected %hu, got %hu\n", calculated_checksum, original_checksum);
+        return -1;  // Return error for checksum mismatch
+    }
+
+    // Copy data to user buffer if valid and packet has content
+    size_t data_length = packet.length < len ? packet.length : len;  // Ensure we do not overflow the buffer
+    memcpy(buf, packet.data, data_length);
+
+    return data_length;  // Return the number of bytes copied to the buffer
+}
 
