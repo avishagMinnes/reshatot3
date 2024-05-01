@@ -41,8 +41,13 @@ int rudp_socket() {
 }
 
 int rudp_send(int sockfd, const void *buf, short len, int flags, const char *ip, int port) {
-    RUDP_Packet *packet; //do malloc
-    // memset(&packet, 0, sizeof(packet));
+    RUDP_Packet *packet = malloc(sizeof(RUDP_Packet));
+    if(packet == NULL) {
+	perror("Memory allocation failed");
+	return -1;
+    }
+    memset(packet, 0, sizeof(RUDP_Packet));
+    
     packet->length = (uint16_t)len;
     memcpy(packet->data, buf, len);
     packet->checksum = calculate_checksum(packet->data, packet->length);
@@ -64,10 +69,8 @@ int rudp_send(int sockfd, const void *buf, short len, int flags, const char *ip,
 int rudp_recv(int sockfd, void *buf, size_t len, int flags, int port) {
     struct sockaddr_in from_addr;
     memset(&from_addr, 0, sizeof(from_addr));
-    // from_addr.sin_family = AF_INET;
-    // from_addr.sin_port = htons(port);
-    // from_addr.sin_addr.s_addr = htons(INADDR_ANY);
     socklen_t from_len = sizeof(from_addr);
+
     RUDP_Packet packet;
 
     // Initialize buffer to zero
@@ -80,9 +83,10 @@ int rudp_recv(int sockfd, void *buf, size_t len, int flags, int port) {
         return -1;
     }
 
-    // Calculate checksum for the received packet
+    // Store original checksum and zero it out for calculation
     unsigned short original_checksum = packet.checksum;  // Store original checksum
     // packet.checksum = 0;  // Zero out checksum for calculation
+
     unsigned short calculated_checksum = calculate_checksum(&packet, sizeof(packet));
 
     // Check checksum validity
@@ -97,6 +101,7 @@ int rudp_recv(int sockfd, void *buf, size_t len, int flags, int port) {
 
     return data_length;  // Return the number of bytes copied to the buffer
 }
+
 
 int rudp_close(int sockfd) {
 	if(close(sockfd) == -1) {
