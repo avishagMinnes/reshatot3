@@ -38,13 +38,12 @@ int main(int argc, char *argv[]) {
     socklen_t client_len = sizeof(client_addr);
 
     // Create UDP socket
-    int sockfd = rudp_socket(AF_INET, SOCK_DGRAM, 0);
+    sockfd = rudp_socket(AF_INET, SOCK_DGRAM, 0);
     if (sockfd < 0) {
         perror("Failed to create UDP socket");
         return 1;
     }
 
-    struct sockaddr_in server_addr;
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY; // Listen on all interfaces
